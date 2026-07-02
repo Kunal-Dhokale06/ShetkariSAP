@@ -1,0 +1,1 @@
+- [Kisan app decisions](kisan-app.md) — AsyncStorage CRUD, no uuid, no Victory Native/maps, AI insights local, i18next v26 init, getCropTotals returns netProfit.

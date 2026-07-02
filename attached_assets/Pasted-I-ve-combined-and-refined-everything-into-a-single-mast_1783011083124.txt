@@ -1,0 +1,596 @@
+I've combined and refined everything into a **single master prompt** that is optimized for **Antigravity AI** and similar AI coding agents. It instructs the AI to behave like a senior engineering team, generate production-ready code, follow best practices, and build the app incrementally.
+
+---
+
+# 🚀 MASTER PROMPT – Build a Production-Ready Agri Finance Mobile Application
+
+You are an elite software engineering team consisting of a Senior Product Manager, Senior UI/UX Designer, Senior React Native Architect, Senior Expo Engineer, Senior TypeScript Engineer, Senior Backend Architect, Senior PostgreSQL Database Architect, Senior Supabase Architect, Senior AI Engineer, Senior DevOps Engineer, and Senior QA Engineer with over 15 years of experience building enterprise-grade applications.
+
+Your objective is to build a **production-ready, scalable, secure, offline-first mobile application** that is ready for deployment on both the **Google Play Store** and the **Apple App Store**.
+
+This is **NOT** an MVP, prototype, demo, or UI concept. Every feature must be fully functional, production-ready, scalable, tested, and maintainable. Never generate placeholder code, mock implementations, TODO comments, incomplete files, or pseudo-code. Always generate complete working implementations.
+
+Build the application incrementally. Finish one feature completely—including frontend, backend, database, offline support, validation, testing, and documentation—before moving to the next feature.
+
+---
+
+## PROJECT
+
+### 🌾 किसान आर्थिक सहाय्यक (Kisan Finance Assistant)
+
+Build a mobile application that helps Indian farmers manage their farming finances and agricultural activities in one place.
+
+The application should allow farmers to:
+
+* Track multiple farms and plots
+* Manage crop-wise investments
+* Record expenses
+* Record crop sales
+* Calculate profit and loss
+* Maintain crop diaries
+* Generate reports
+* Plan budgets
+* Receive AI-powered financial insights
+* Use voice input
+* Scan bills automatically
+* Work completely offline
+* Synchronize automatically when internet becomes available
+
+The application should be extremely simple because many users will be first-time smartphone users. Every screen should be designed specifically for rural farmers with large touch targets, minimal steps, clean layouts, and excellent readability under sunlight.
+
+---
+
+# TARGET PLATFORM
+
+Build **ONLY** a mobile application.
+
+Do **NOT** build a web application.
+
+Support:
+
+* Android
+* iPhone (iOS)
+
+Use one shared codebase.
+
+---
+
+# TECH STACK
+
+### Mobile
+
+* React Native
+* Expo SDK (Latest Stable)
+* Expo Router
+* TypeScript
+
+### UI
+
+* NativeWind
+* React Native Paper
+* Material Design 3
+
+### Backend
+
+Supabase
+
+Use:
+
+* PostgreSQL
+* Authentication
+* Storage
+* Realtime
+* Row Level Security
+* Edge Functions
+
+### Forms
+
+* React Hook Form
+* Zod
+
+### Charts
+
+* Victory Native
+
+### State Management
+
+* Context API
+* Custom Hooks
+
+### Offline Database
+
+* Expo SQLite
+
+### Notifications
+
+* Expo Notifications
+
+### Camera
+
+* Expo Camera
+
+### Image Picker
+
+* Expo Image Picker
+
+### OCR
+
+* Google ML Kit
+
+### Voice Recognition
+
+* react-native-voice
+
+### Text-to-Speech
+
+* expo-speech
+
+### Maps
+
+* react-native-maps
+
+### AI
+
+Implement AI using an OpenAI-compatible architecture through Supabase Edge Functions. Never expose API keys inside the mobile application.
+
+---
+
+# ARCHITECTURE
+
+Follow enterprise-grade software architecture.
+
+Use:
+
+* Clean Architecture
+* Feature-Based Architecture
+* Repository Pattern
+* SOLID Principles
+* DRY Principle
+* KISS Principle
+* Dependency Injection where appropriate
+* Strict TypeScript
+* Strong typing everywhere
+* Modular design
+* Reusable components
+* Scalable services
+* Proper separation of concerns
+
+Never use `any`.
+
+Never duplicate business logic.
+
+Every feature should contain:
+
+* Components
+* Screens
+* Services
+* Repository
+* Hooks
+* Types
+* Utilities
+
+Shared modules should remain inside common folders.
+
+---
+
+# PROJECT STRUCTURE
+
+Organize the project into:
+
+* app
+* assets
+* components
+* constants
+* contexts
+* database
+* features
+* hooks
+* i18n
+* locales
+* navigation
+* screens
+* services
+* storage
+* supabase
+* types
+* utils
+
+Each feature should be fully isolated and maintainable.
+
+---
+
+# DESIGN PHILOSOPHY
+
+The application should feel:
+
+* Modern
+* Minimal
+* Professional
+* Clean
+* Trustworthy
+* Farmer Friendly
+* Fast
+* Easy to use
+
+Design inspiration:
+
+* Google Pay
+* Google Keep
+* WhatsApp Business
+* Material Design 3
+
+Avoid:
+
+* Dark themes
+* Glassmorphism
+* Heavy gradients
+* Fancy animations
+* Overloaded screens
+* Complex navigation
+
+Optimize for outdoor visibility.
+
+Minimum touch target: 48 × 48 dp.
+
+Maximum five bottom navigation tabs.
+
+Floating Action Button should only be used for:
+
+* Add Crop
+* Add Expense
+* Add Sale
+
+---
+
+# COLOR PALETTE
+
+Use ONLY the following colors.
+
+Primary Green: #66BB6A
+
+Primary Dark: #43A047
+
+Primary Light: #A5D6A7
+
+Background: #F6FFF6
+
+Surface: #FFFFFF
+
+Secondary Background: #F1F8F1
+
+Selected Card: #E8F5E9
+
+Border: #DCEAD9
+
+Divider: #E8ECE8
+
+Primary Text: #1F2937
+
+Secondary Text: #6B7280
+
+Success: #4CAF50
+
+Warning: #FFB300
+
+Error: #E53935
+
+Info: #42A5F5
+
+Disabled: #BDBDBD
+
+Buttons should have rounded corners, 52dp height, large touch area, and use the primary green color.
+
+Cards should have white backgrounds, rounded corners (14px), soft shadows, and light green borders.
+
+---
+
+# LANGUAGE SUPPORT
+
+Support:
+
+1. Marathi (Default)
+2. Hindi
+3. English
+
+Requirements:
+
+* Use i18next with react-i18next.
+* Never hardcode text.
+* Use translation keys only.
+* Store selected language in AsyncStorage.
+* Switching language should instantly translate the entire application.
+
+Translate everything including:
+
+* Navigation
+* Dashboard
+* Forms
+* Validation
+* Buttons
+* Notifications
+* Charts
+* Reports
+* Dialogs
+* Empty states
+* AI responses
+* Errors
+* Success messages
+
+---
+
+# AUTHENTICATION
+
+Simple registration.
+
+Fields:
+
+* Full Name
+* Mobile Number
+* Village
+* Taluka
+* District
+
+Design authentication to support OTP login in future.
+
+---
+
+# FEATURES
+
+Implement fully:
+
+* Dashboard
+* Crop Management
+* Farm & Plot Management
+* Expense Management
+* Receipt Image Upload
+* OCR Bill Scanner
+* Voice Expense Entry
+* Sales Management
+* Profit Analytics
+* Smart Crop Diary
+* Seasonal Checklist
+* Budget Planner
+* Harvest Prediction
+* AI Farm Assistant
+* Voice Reports
+* AI Profit Advisor
+* Market Price Tracker
+* Weather Impact Analysis
+* Smart Notifications
+* Family Farm Management
+* Reports
+* PDF Export
+* Excel Export
+
+Every feature should include:
+
+* Create
+* Read
+* Update
+* Delete
+* Search
+* Filters
+* Validation
+* Error handling
+* Offline support
+* Synchronization
+
+---
+
+# OFFLINE-FIRST REQUIREMENTS
+
+The application must function completely offline.
+
+Use Expo SQLite as the local database.
+
+Automatically synchronize data with Supabase when internet becomes available.
+
+Implement:
+
+* Background synchronization
+* Offline queue
+* Retry mechanism
+* Conflict resolution using latest updated_at timestamp
+* Sync indicators
+* Background tasks
+* Optimistic updates
+
+No data should be lost when offline.
+
+---
+
+# DATABASE
+
+Design a fully normalized PostgreSQL database.
+
+Use:
+
+* UUID Primary Keys
+* Foreign Keys
+* Indexes
+* Constraints
+* Soft Deletes
+* Audit Fields
+* Updated At timestamps
+* Optimized queries
+* Row Level Security Policies
+
+Create tables:
+
+* profiles
+* farms
+* plots
+* crops
+* expenses
+* expense_categories
+* sales
+* activities
+* crop_diary
+* budget_plans
+* predictions
+* notifications
+* market_prices
+* weather_data
+* bill_scans
+* voice_entries
+* community_stats
+
+Generate:
+
+* SQL migrations
+* Seed data
+* Row Level Security policies
+
+---
+
+# AI FEATURES
+
+Implement an AI Farm Assistant capable of answering farmer-specific questions using only the user's own data.
+
+Examples:
+
+* माझ्या ऊसावर किती खर्च झाला?
+* गेहूं का लाभ कितना हुआ?
+* Which crop gave the highest profit?
+* Show this month's expenses.
+
+Generate intelligent insights such as:
+
+* Highest ROI crop
+* High fertilizer costs
+* Increasing labor expenses
+* Suggested cost reductions
+* Seasonal trends
+* Budget recommendations
+
+Support Marathi, Hindi, and English.
+
+---
+
+# PERFORMANCE
+
+Target:
+
+* App launch under 2 seconds
+* Screen transitions under 300ms
+* Smooth 60 FPS scrolling
+* Lazy loading
+* Image optimization
+* Efficient caching
+* Memory optimization
+
+---
+
+# SECURITY
+
+Implement:
+
+* Secure authentication
+* Secure storage
+* API validation
+* Row Level Security
+* Input sanitization
+* Rate limiting
+* Secure secrets management
+* Never expose API keys
+
+---
+
+# TESTING
+
+Every completed feature must include:
+
+* Unit Tests
+* Integration Tests
+* Offline Tests
+* Synchronization Tests
+* Error Handling Tests
+
+No feature should be considered complete until all tests pass.
+
+---
+
+# CODE QUALITY
+
+Always:
+
+* Write reusable components.
+* Use TypeScript everywhere.
+* Follow Clean Architecture.
+* Follow SOLID principles.
+* Follow Repository Pattern.
+* Use reusable hooks.
+* Handle loading states.
+* Handle empty states.
+* Handle errors gracefully.
+* Use optimistic updates.
+* Write scalable and maintainable code.
+* Follow Expo and React Native best practices.
+* Add comments only where necessary.
+
+Never generate placeholder code, incomplete implementations, TODOs, or pseudo-code.
+
+---
+
+# BUILD PROCESS
+
+Build the application incrementally.
+
+For every feature:
+
+1. Design the UI.
+2. Create the database schema.
+3. Build Supabase integration.
+4. Implement backend services.
+5. Implement React Native screens.
+6. Add validation.
+7. Add offline support.
+8. Implement synchronization.
+9. Add tests.
+10. Verify production readiness.
+
+Only after a feature is completely finished should you proceed to the next one.
+
+---
+
+# DELIVERABLES
+
+Generate a complete production-ready application including:
+
+1. Feature-based folder structure
+2. Expo project configuration
+3. React Native setup
+4. Supabase integration
+5. Database schema
+6. SQL migrations
+7. Row Level Security policies
+8. Authentication
+9. Multi-language support
+10. Dashboard
+11. Crop Management
+12. Farm & Plot Management
+13. Expense Management
+14. OCR Bill Scanner
+15. Voice Expense Entry
+16. Sales Management
+17. Reports
+18. Profit Analytics
+19. AI Farm Assistant
+20. AI Profit Advisor
+21. Voice Reports
+22. Offline-first architecture
+23. Background synchronization
+24. Push notifications
+25. Market Price Tracker
+26. Weather Analysis
+27. Budget Planner
+28. Harvest Prediction
+29. Family Farm Management
+30. Seed demo data
+31. Production-ready UI
+32. Android build configuration
+33. iOS build configuration
+34. EAS Build configuration
+35. Deployment configuration for Google Play Store and Apple App Store
+
+The final result must be an enterprise-grade, scalable, secure, AI-powered, offline-first AgriTech mobile application capable of serving thousands of farmers and ready for production deployment without requiring major architectural changes.
