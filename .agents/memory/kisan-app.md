@@ -32,3 +32,16 @@ Use `Intl.DateTimeFormat(locale, opts).format(date)` with locale derived from la
 
 ## Charts key prop
 Use `key={item.label}` in SimpleBarChart. Use `key={insight.title}` in AI insight list.
+
+## OTP auth model (intentional client-side trust)
+The app is local-first; OTP verifies identity for onboarding only. `verifiedPhone` is stored in AsyncStorage (`@kisan/pending_phone` during flow, `@kisan/verified_phone` after). No server session/JWT — this is acceptable since no server-side protected data exists.
+**Why:** Adding JWT session management for a purely local-storage app adds complexity with no security benefit.
+
+## API server URL
+Expo `EXPO_PUBLIC_DOMAIN` env var → `https://${EXPO_PUBLIC_DOMAIN}/api` (path `/api` is the artifact previewPath). Localhost fallback: `http://localhost:8080/api`.
+
+## Dev OTP flow
+`phone.tsx` stores devOtp to `@kisan/dev_otp` in AsyncStorage before navigating away. `otp.tsx` reads and displays it as a banner. Cleaned up with `multiRemove` on successful verification.
+
+## OTP screen missing-phone guard
+If `@kisan/pending_phone` is absent on mount (direct navigation), `otp.tsx` redirects to `/auth/phone` after 800ms.

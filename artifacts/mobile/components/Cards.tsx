@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { useColors } from '@/hooks/useColors';
+import { CropTypeIcon } from './CropTypeIcon';
 import type { Crop, Expense, Sale } from '@/types';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -101,7 +102,10 @@ export function CropCard({ crop, investment, revenue, onPress }: CropCardProps) 
       ]}
     >
       <View style={styles.cropCardHeader}>
-        <View style={{ flex: 1 }}>
+        {/* Crop type emoji icon */}
+        <CropTypeIcon cropName={crop.name} size="sm" />
+
+        <View style={{ flex: 1, marginLeft: 10 }}>
           <Text style={[styles.cropName, { color: colors.foreground, fontFamily: 'Inter_600SemiBold' }]}>
             {crop.name}
           </Text>

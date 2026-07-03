@@ -16,18 +16,26 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '@/contexts/AppContext';
 import { useColors } from '@/hooks/useColors';
 import { FormInput, OptionChip } from '@/components/Cards';
+import { DropdownPicker } from '@/components/DropdownPicker';
+import { CropTypeIcon } from '@/components/CropTypeIcon';
+import { CROP_LIST } from '@/constants/crops-data';
 import type { CropStatus, Season } from '@/types';
 
 const SEASONS: Season[] = ['kharif', 'rabi', 'zaid'];
 const STATUSES: CropStatus[] = ['active', 'harvested', 'failed'];
 
+const CROP_OPTIONS = CROP_LIST.map(c => ({
+  label: c.name,
+  value: c.name,
+  emoji: c.emoji,
+  subtitle: `${c.mr} / ${c.hi}`,
+}));
+
 const todayStr = () => {
   const d = new Date();
   return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
 };
-
 const isValidDateStr = (s: string) => /^\d{2}\/\d{2}\/\d{4}$/.test(s);
-
 const dateStrToISO = (s: string) => {
   const [dd, mm, yyyy] = s.split('/').map(Number);
   return new Date(yyyy, mm - 1, dd).toISOString();
@@ -39,6 +47,7 @@ export default function AddCropScreen() {
   const { t } = useTranslation();
   const { farms, addCrop } = useApp();
 
+  const [selectedVariety, setSelectedVariety] = useState('');
   const [cropName, setCropName] = useState('');
   const [season, setSeason] = useState<Season>('kharif');
   const [plantDate, setPlantDate] = useState(todayStr());
@@ -63,6 +72,15 @@ export default function AddCropScreen() {
       </View>
     );
   }
+
+  const handleVarietyChange = (value: string) => {
+    setSelectedVariety(value);
+    // Auto-fill the name field if empty or previously auto-filled
+    if (!cropName || CROP_LIST.some(c => c.name === cropName)) {
+      setCropName(value);
+      setCropNameErr('');
+    }
+  };
 
   const validate = () => {
     let ok = true;
@@ -107,29 +125,49 @@ export default function AddCropScreen() {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        <FormInput
-          label={t('crop.name')}
-          value={cropName}
-          onChangeText={setCropName}
-          placeholder="e.g. Wheat, Rice, Cotton"
-          error={cropNameErr}
-          autoCapitalize="words"
-          autoFocus
+        {/* ── Crop variety picker ─────────────────────────────────────── */}
+        <DropdownPicker
+          label={t('crop.variety')}
+          placeholder={t('crop.selectVariety')}
+          options={CROP_OPTIONS}
+          value={selectedVariety}
+          onChange={handleVarietyChange}
+          searchable
         />
 
-        {/* Season */}
+        {/* ── Crop name (custom / overridable) ────────────────────────── */}
+        <View style={styles.nameRow}>
+          {cropName ? (
+            <CropTypeIcon cropName={cropName} size="md" />
+          ) : null}
+          <View style={{ flex: 1 }}>
+            <FormInput
+              label={t('crop.name')}
+              value={cropName}
+              onChangeText={t => { setCropName(t); setCropNameErr(''); }}
+              placeholder="e.g. Wheat, Rice, Cotton"
+              error={cropNameErr}
+              autoCapitalize="words"
+            />
+          </View>
+        </View>
+
+        {/* ── Season ─────────────────────────────────────────────────── */}
         <Text style={[styles.fieldLabel, { color: colors.foreground, fontFamily: 'Inter_500Medium' }]}>
           {t('crop.season')}
         </Text>
         <View style={styles.chipRow}>
-          {SEASONS.map(s => (
-            <OptionChip
-              key={s}
-              label={t(`crop.${s}`)}
-              selected={season === s}
-              onPress={() => setSeason(s)}
-            />
-          ))}
+          {SEASONS.map(s => {
+            const SEASON_EMOJI: Record<Season, string> = { kharif: '☔', rabi: '❄️', zaid: '☀️' };
+            return (
+              <OptionChip
+                key={s}
+                label={`${SEASON_EMOJI[s]} ${t(`crop.${s}`)}`}
+                selected={season === s}
+                onPress={() => setSeason(s)}
+              />
+            );
+          })}
         </View>
 
         <FormInput
@@ -159,19 +197,22 @@ export default function AddCropScreen() {
           keyboardType="decimal-pad"
         />
 
-        {/* Status */}
+        {/* ── Status ─────────────────────────────────────────────────── */}
         <Text style={[styles.fieldLabel, { color: colors.foreground, fontFamily: 'Inter_500Medium' }]}>
           {t('crop.status')}
         </Text>
         <View style={styles.chipRow}>
-          {STATUSES.map(s => (
-            <OptionChip
-              key={s}
-              label={t(`crop.${s}`)}
-              selected={status === s}
-              onPress={() => setStatus(s)}
-            />
-          ))}
+          {STATUSES.map(s => {
+            const STATUS_EMOJI: Record<CropStatus, string> = { active: '🌱', harvested: '✅', failed: '❌' };
+            return (
+              <OptionChip
+                key={s}
+                label={`${STATUS_EMOJI[s]} ${t(`crop.${s}`)}`}
+                selected={status === s}
+                onPress={() => setStatus(s)}
+              />
+            );
+          })}
         </View>
 
         <FormInput
@@ -188,7 +229,10 @@ export default function AddCropScreen() {
           onPress={handleSave}
           disabled={isSaving}
           activeOpacity={0.85}
-          style={[styles.saveBtn, { backgroundColor: isSaving ? colors.disabled : colors.primary }]}
+          style={[
+            styles.saveBtn,
+            { backgroundColor: isSaving ? colors.disabled : colors.primary },
+          ]}
         >
           <MaterialIcons name="check-circle" size={20} color="#FFFFFF" />
           <Text style={[styles.saveBtnText, { fontFamily: 'Inter_700Bold', color: '#FFFFFF' }]}>
@@ -203,8 +247,9 @@ export default function AddCropScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 20, paddingBottom: 40 },
+  nameRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
   fieldLabel: { fontSize: 14, marginBottom: 8 },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 8 },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 8, gap: 8 },
   saveBtn: {
     flexDirection: 'row',
     alignItems: 'center',

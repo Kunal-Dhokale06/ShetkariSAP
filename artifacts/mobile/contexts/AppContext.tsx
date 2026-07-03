@@ -25,6 +25,7 @@ const KEYS = {
   EXPENSES: '@kisan/expenses',
   SALES: '@kisan/sales',
   LANGUAGE: '@kisan/language',
+  PHONE: '@kisan/verified_phone',
 };
 
 const generateId = () =>
@@ -55,6 +56,8 @@ interface AppContextType {
   deleteSale: (id: string) => Promise<void>;
 
   setLanguage: (lang: Language) => Promise<void>;
+  verifiedPhone: string | null;
+  setVerifiedPhone: (phone: string) => Promise<void>;
 
   getCropExpenses: (cropId: string) => Expense[];
   getCropSales: (cropId: string) => Sale[];
@@ -72,6 +75,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
   const [language, setLanguageState] = useState<Language>('mr');
+  const [verifiedPhone, setVerifiedPhoneState] = useState<string | null>(null);
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -79,10 +83,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     initialized.current = true;
     (async () => {
       try {
-        const [lang, profileStr, farmsStr, cropsStr, expensesStr, salesStr] =
+        const [lang, profileStr, farmsStr, cropsStr, expensesStr, salesStr, phoneStr] =
           await AsyncStorage.multiGet([
             KEYS.LANGUAGE, KEYS.PROFILE, KEYS.FARMS,
-            KEYS.CROPS, KEYS.EXPENSES, KEYS.SALES,
+            KEYS.CROPS, KEYS.EXPENSES, KEYS.SALES, KEYS.PHONE,
           ]);
 
         const savedLang = (lang[1] as Language) || 'mr';
@@ -94,6 +98,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (cropsStr[1]) setCrops(JSON.parse(cropsStr[1]));
         if (expensesStr[1]) setExpenses(JSON.parse(expensesStr[1]));
         if (salesStr[1]) setSales(JSON.parse(salesStr[1]));
+        if (phoneStr[1]) setVerifiedPhoneState(phoneStr[1]);
       } catch {
         // ignore parse errors
       } finally {
@@ -226,6 +231,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.setItem(KEYS.LANGUAGE, lang);
   }, []);
 
+  const setVerifiedPhone = useCallback(async (phone: string) => {
+    setVerifiedPhoneState(phone);
+    await AsyncStorage.setItem(KEYS.PHONE, phone);
+  }, []);
+
   // Computed helpers
   const getCropExpenses = useCallback((cropId: string) =>
     expenses.filter(e => e.cropId === cropId), [expenses]);
@@ -255,6 +265,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     expenses,
     sales,
     language,
+    verifiedPhone,
+    setVerifiedPhone,
     saveProfile,
     updateProfile,
     addCrop,

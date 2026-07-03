@@ -22,7 +22,7 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
-  const { profile, isLoaded } = useApp();
+  const { profile, isLoaded, verifiedPhone } = useApp();
   const colors = useColors();
   const router = useRouter();
   const pathname = usePathname();
@@ -31,11 +31,11 @@ function RootLayoutNav() {
     if (!isLoaded) return;
     const inAuth = pathname.startsWith('/auth');
     if (!profile && !inAuth) {
-      router.replace('/auth/setup');
+      router.replace(verifiedPhone ? '/auth/setup' : '/auth/phone');
     } else if (profile && inAuth) {
       router.replace('/(tabs)');
     }
-  }, [profile, isLoaded, pathname]);
+  }, [profile, isLoaded, pathname, verifiedPhone]);
 
   return (
     <Stack
@@ -48,6 +48,8 @@ function RootLayoutNav() {
       }}
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="auth/phone" options={{ headerShown: false }} />
+      <Stack.Screen name="auth/otp" options={{ headerShown: false }} />
       <Stack.Screen name="auth/setup" options={{ headerShown: false }} />
       <Stack.Screen
         name="crops/add"
