@@ -379,10 +379,10 @@ export function FormInput({ label, error, style, ...props }: FormInputProps) {
 }
 
 // ── Section Header ────────────────────────────────────────────────────────────
-export function SectionHeader({ title, action }: { title: string; action?: { label: string; onPress: () => void } }) {
+export function SectionHeader({ title, action, style }: { title: string; action?: { label: string; onPress: () => void }; style?: object }) {
   const colors = useColors();
   return (
-    <View style={styles.sectionHeader}>
+    <View style={[styles.sectionHeader, style]}>
       <Text style={[styles.sectionTitle, { color: colors.foreground, fontFamily: 'Inter_600SemiBold' }]}>
         {title}
       </Text>

@@ -2,7 +2,11 @@ import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
+import v1Router from "./routes/v1";
 import { logger } from "./lib/logger";
+import weatherRoutes from "./routes/wheather";
+import { env } from "./config/env";
+import { errorHandler, notFoundHandler } from "./middleware/error-handler";
 
 const app: Express = express();
 
@@ -25,10 +29,20 @@ app.use(
     },
   }),
 );
-app.use(cors());
+app.use(
+  cors({
+    origin: env.CORS_ORIGIN === "*" ? true : env.CORS_ORIGIN.split(","),
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/api/weather", weatherRoutes);
 
-app.use("/api", router);
+app.use(env.API_PREFIX, router);
+app.use(`${env.API_PREFIX}/v1`, v1Router);
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 export default app;

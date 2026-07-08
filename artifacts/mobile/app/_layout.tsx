@@ -1,5 +1,7 @@
 import '@/i18n';
 import React, { useEffect } from 'react';
+import { Alert, Platform } from 'react-native';
+import * as Location from 'expo-location';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
@@ -37,6 +39,25 @@ function RootLayoutNav() {
     }
   }, [profile, isLoaded, pathname, verifiedPhone]);
 
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+
+    async function requestLocationPermission() {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          i18n.t('weather.locationPermissionTitle'),
+          i18n.t('weather.locationPermissionMessage'),
+          [{ text: i18n.t('common.ok') }],
+        );
+      }
+    }
+
+    requestLocationPermission().catch(() => {
+      // fail silently; weather hook will fallback to profile location
+    });
+  }, []);
+
   return (
     <Stack
       screenOptions={{
@@ -66,6 +87,18 @@ function RootLayoutNav() {
       <Stack.Screen
         name="sales/add"
         options={{ title: i18n.t('sale.add') }}
+      />
+      <Stack.Screen
+        name="scan"
+        options={{ title: i18n.t('tools.receiptScanner') }}
+      />
+      <Stack.Screen
+        name="budget"
+        options={{ title: i18n.t('tools.budgetPlanner') }}
+      />
+      <Stack.Screen
+        name="reports/create"
+        options={{ title: i18n.t('tools.reportGenerator') }}
       />
     </Stack>
   );

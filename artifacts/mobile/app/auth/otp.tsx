@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -8,21 +8,21 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
-import * as Haptics from 'expo-haptics';
-import { useTranslation } from 'react-i18next';
-import { useApp } from '@/contexts/AppContext';
-import { useColors } from '@/hooks/useColors';
+} from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import * as Haptics from "expo-haptics";
+import { useTranslation } from "react-i18next";
+import { useApp } from "@/contexts/AppContext";
+import { useColors } from "@/hooks/useColors";
 
 const OTP_LEN = 6;
 const RESEND_SECS = 60;
 
-const API_BASE = process.env['EXPO_PUBLIC_DOMAIN']
-  ? `https://${process.env['EXPO_PUBLIC_DOMAIN']}/api`
-  : 'http://localhost:8080/api';
+const API_BASE = process.env["EXPO_PUBLIC_DOMAIN"]
+  ? `https://${process.env["EXPO_PUBLIC_DOMAIN"]}/api`
+  : "http://localhost:8080/api";
 
 export default function OtpScreen() {
   const colors = useColors();
@@ -30,20 +30,20 @@ export default function OtpScreen() {
   const { t } = useTranslation();
   const { setVerifiedPhone } = useApp();
 
-  const [digits, setDigits] = useState<string[]>(Array(OTP_LEN).fill(''));
-  const [phone, setPhone] = useState('');
+  const [digits, setDigits] = useState<string[]>(Array(OTP_LEN).fill(""));
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [timer, setTimer] = useState(RESEND_SECS);
   const [resendLoading, setResendLoading] = useState(false);
-  const [devOtp, setDevOtp] = useState('');
+  const [devOtp, setDevOtp] = useState("");
   const inputRefs = useRef<(TextInput | null)[]>(Array(OTP_LEN).fill(null));
-  const isWeb = Platform.OS === 'web';
+  const isWeb = Platform.OS === "web";
 
   // Load pending phone; if missing after mount, redirect back to phone entry
   useEffect(() => {
     let cancelled = false;
-    AsyncStorage.multiGet(['@kisan/pending_phone', '@kisan/dev_otp']).then(
+    AsyncStorage.multiGet(["@kisan/pending_phone", "@kisan/dev_otp"]).then(
       ([[, phoneVal], [, devOtpVal]]) => {
         if (cancelled) return;
         if (phoneVal) {
@@ -51,68 +51,76 @@ export default function OtpScreen() {
         } else {
           // No pending phone — user navigated here directly; send them back
           setTimeout(() => {
-            if (!cancelled) router.replace('/auth/phone');
+            if (!cancelled) router.replace("/auth/phone");
           }, 800);
         }
         if (devOtpVal) setDevOtp(devOtpVal);
       },
     );
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Countdown
   useEffect(() => {
     if (timer <= 0) return;
-    const id = setInterval(() => setTimer(prev => prev - 1), 1000);
+    const id = setInterval(() => setTimer((prev) => prev - 1), 1000);
     return () => clearInterval(id);
   }, [timer]);
 
   const handleDigit = (index: number, value: string) => {
-    const digit = value.replace(/\D/g, '').slice(-1);
+    const digit = value.replace(/\D/g, "").slice(-1);
     const next = [...digits];
     next[index] = digit;
     setDigits(next);
-    setError('');
+    setError("");
     if (digit && index < OTP_LEN - 1) {
       inputRefs.current[index + 1]?.focus();
     }
-    if (next.every(d => d !== '')) {
-      handleVerify(next.join(''));
+    if (next.every((d) => d !== "")) {
+      handleVerify(next.join(""));
     }
   };
 
   const handleKeyPress = (index: number, key: string) => {
-    if (key === 'Backspace' && !digits[index] && index > 0) {
+    if (key === "Backspace" && !digits[index] && index > 0) {
       const next = [...digits];
-      next[index - 1] = '';
+      next[index - 1] = "";
       setDigits(next);
       inputRefs.current[index - 1]?.focus();
     }
   };
 
   const handleVerify = useCallback(
-    async (code: string = digits.join('')) => {
+    async (code: string = digits.join("")) => {
       if (code.length < OTP_LEN) return;
       setLoading(true);
-      setError('');
+      setError("");
       try {
         const res = await fetch(`${API_BASE}/auth/verify-otp`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ mobile: phone, otp: code }),
         });
-        const data = (await res.json()) as { success?: boolean; error?: string };
+        const data = (await res.json()) as {
+          success?: boolean;
+          error?: string;
+        };
         if (!res.ok || !data.success) {
-          throw new Error(data.error ?? t('auth.invalidOtp'));
+          throw new Error(data.error ?? t("auth.invalidOtp"));
         }
         await setVerifiedPhone(phone);
-        await AsyncStorage.multiRemove(['@kisan/pending_phone', '@kisan/dev_otp']);
+        await AsyncStorage.multiRemove([
+          "@kisan/pending_phone",
+          "@kisan/dev_otp",
+        ]);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        router.replace('/auth/setup');
+        router.replace("/auth/setup");
       } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : t('auth.invalidOtp');
+        const msg = e instanceof Error ? e.message : t("auth.invalidOtp");
         setError(msg);
-        setDigits(Array(OTP_LEN).fill(''));
+        setDigits(Array(OTP_LEN).fill(""));
         setTimeout(() => inputRefs.current[0]?.focus(), 100);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       } finally {
@@ -125,33 +133,33 @@ export default function OtpScreen() {
 
   const handleResend = async () => {
     setResendLoading(true);
-    setError('');
+    setError("");
     try {
       const res = await fetch(`${API_BASE}/auth/send-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mobile: phone }),
       });
       const data = (await res.json()) as { error?: string };
-      if (!res.ok) throw new Error(data.error ?? t('auth.networkError'));
+      if (!res.ok) throw new Error(data.error ?? t("auth.networkError"));
       setTimer(RESEND_SECS);
-      setDigits(Array(OTP_LEN).fill(''));
+      setDigits(Array(OTP_LEN).fill(""));
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t('auth.networkError'));
+      setError(e instanceof Error ? e.message : t("auth.networkError"));
     } finally {
       setResendLoading(false);
     }
   };
 
-  const otp = digits.join('');
-  const maskedPhone = phone.replace(/(\d{3})(\d{4})(\d{3})/, '$1 $2 $3');
+  const otp = digits.join("");
+  const maskedPhone = phone.replace(/(\d{3})(\d{4})(\d{3})/, "$1 $2 $3");
 
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: colors.background }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       {/* ── Header ──────────────────────────────────────────────────── */}
       <View
@@ -161,23 +169,40 @@ export default function OtpScreen() {
         ]}
       >
         <TouchableOpacity
-          onPress={() => router.replace('/auth/phone')}
+          onPress={() => router.replace("/auth/phone")}
           style={styles.backBtn}
           hitSlop={12}
         >
           <MaterialIcons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
 
-        <View style={[styles.lockBadge, { backgroundColor: colors.primaryDark }]}>
+        <View
+          style={[styles.lockBadge, { backgroundColor: colors.primaryDark }]}
+        >
           <Text style={styles.lockEmoji}>🔐</Text>
         </View>
-        <Text style={[styles.headerTitle, { color: '#fff', fontFamily: 'Inter_700Bold' }]}>
-          {t('auth.otpTitle')}
+        <Text
+          style={[
+            styles.headerTitle,
+            { color: "#fff", fontFamily: "Inter_700Bold" },
+          ]}
+        >
+          {t("auth.otpTitle")}
         </Text>
-        <Text style={[styles.headerSub, { color: colors.primaryLight, fontFamily: 'Inter_400Regular' }]}>
-          {t('auth.otpSentTo')}
+        <Text
+          style={[
+            styles.headerSub,
+            { color: colors.primaryLight, fontFamily: "Inter_400Regular" },
+          ]}
+        >
+          {t("auth.otpSentTo")}
         </Text>
-        <Text style={[styles.phoneTxt, { color: '#fff', fontFamily: 'Inter_600SemiBold' }]}>
+        <Text
+          style={[
+            styles.phoneTxt,
+            { color: "#fff", fontFamily: "Inter_600SemiBold" },
+          ]}
+        >
           🇮🇳 +91 {maskedPhone}
         </Text>
       </View>
@@ -189,7 +214,7 @@ export default function OtpScreen() {
           {digits.map((d, i) => (
             <TextInput
               key={i}
-              ref={ref => {
+              ref={(ref) => {
                 inputRefs.current[i] = ref;
               }}
               style={[
@@ -202,12 +227,14 @@ export default function OtpScreen() {
                       : colors.border,
                   backgroundColor: d ? colors.accent : colors.card,
                   color: colors.foreground,
-                  fontFamily: 'Inter_700Bold',
+                  fontFamily: "Inter_700Bold",
                 },
               ]}
               value={d}
-              onChangeText={val => handleDigit(i, val)}
-              onKeyPress={({ nativeEvent }) => handleKeyPress(i, nativeEvent.key)}
+              onChangeText={(val) => handleDigit(i, val)}
+              onKeyPress={({ nativeEvent }) =>
+                handleKeyPress(i, nativeEvent.key)
+              }
               keyboardType="number-pad"
               maxLength={1}
               textAlign="center"
@@ -233,8 +260,17 @@ export default function OtpScreen() {
 
         {!!error && (
           <View style={styles.errorRow}>
-            <MaterialIcons name="error-outline" size={16} color={colors.error} />
-            <Text style={[styles.errorText, { color: colors.error, fontFamily: 'Inter_400Regular' }]}>
+            <MaterialIcons
+              name="error-outline"
+              size={16}
+              color={colors.error}
+            />
+            <Text
+              style={[
+                styles.errorText,
+                { color: colors.error, fontFamily: "Inter_400Regular" },
+              ]}
+            >
               {error}
             </Text>
           </View>
@@ -246,7 +282,10 @@ export default function OtpScreen() {
           activeOpacity={0.85}
           style={[
             styles.verifyBtn,
-            { backgroundColor: otp.length < OTP_LEN ? colors.disabled : colors.primary },
+            {
+              backgroundColor:
+                otp.length < OTP_LEN ? colors.disabled : colors.primary,
+            },
           ]}
         >
           {loading ? (
@@ -254,8 +293,13 @@ export default function OtpScreen() {
           ) : (
             <>
               <MaterialIcons name="verified" size={20} color="#fff" />
-              <Text style={[styles.verifyBtnTxt, { fontFamily: 'Inter_700Bold', color: '#fff' }]}>
-                {t('auth.verify')}
+              <Text
+                style={[
+                  styles.verifyBtnTxt,
+                  { fontFamily: "Inter_700Bold", color: "#fff" },
+                ]}
+              >
+                {t("auth.verify")}
               </Text>
             </>
           )}
@@ -264,36 +308,64 @@ export default function OtpScreen() {
         {/* Resend row */}
         <View style={styles.resendRow}>
           {timer > 0 ? (
-            <Text style={[styles.timerTxt, { color: colors.mutedForeground, fontFamily: 'Inter_400Regular' }]}>
-              {t('auth.resendIn')} {timer}s
+            <Text
+              style={[
+                styles.timerTxt,
+                {
+                  color: colors.mutedForeground,
+                  fontFamily: "Inter_400Regular",
+                },
+              ]}
+            >
+              {t("auth.resendIn")} {timer}s
             </Text>
           ) : resendLoading ? (
             <ActivityIndicator size="small" color={colors.primary} />
           ) : (
             <TouchableOpacity onPress={handleResend}>
-              <Text style={[styles.resendLink, { color: colors.primary, fontFamily: 'Inter_600SemiBold' }]}>
-                ↺ {t('auth.resendOtp')}
+              <Text
+                style={[
+                  styles.resendLink,
+                  { color: colors.primary, fontFamily: "Inter_600SemiBold" },
+                ]}
+              >
+                ↺ {t("auth.resendOtp")}
               </Text>
             </TouchableOpacity>
           )}
         </View>
 
         <TouchableOpacity
-          onPress={() => router.replace('/auth/phone')}
+          onPress={() => router.replace("/auth/phone")}
           style={styles.changeRow}
         >
           <MaterialIcons name="edit" size={14} color={colors.mutedForeground} />
-          <Text style={[styles.changeTxt, { color: colors.mutedForeground, fontFamily: 'Inter_400Regular' }]}>
-            {t('auth.changeNumber')}
+          <Text
+            style={[
+              styles.changeTxt,
+              { color: colors.mutedForeground, fontFamily: "Inter_400Regular" },
+            ]}
+          >
+            {t("auth.changeNumber")}
           </Text>
         </TouchableOpacity>
 
         {/* Dev OTP hint — only shown in development builds */}
         {!!devOtp && (
-          <View style={[styles.devBanner, { backgroundColor: '#FEF9C3', borderColor: '#CA8A04' }]}>
+          <View
+            style={[
+              styles.devBanner,
+              { backgroundColor: "#FEF9C3", borderColor: "#CA8A04" },
+            ]}
+          >
             <Text style={styles.devEmoji}>🔑</Text>
-            <Text style={[styles.devTxt, { color: '#92400E', fontFamily: 'Inter_600SemiBold' }]}>
-              {t('auth.devOtp')}: {devOtp}
+            <Text
+              style={[
+                styles.devTxt,
+                { color: "#92400E", fontFamily: "Inter_600SemiBold" },
+              ]}
+            >
+              {t("auth.devOtp")}: {devOtp}
             </Text>
           </View>
         )}
@@ -306,11 +378,11 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 20,
     paddingBottom: 32,
-    alignItems: 'center',
+    alignItems: "center",
   },
   backBtn: {
-    position: 'absolute',
-    top: Platform.OS === 'web' ? 64 : 56,
+    position: "absolute",
+    top: Platform.OS === "web" ? 64 : 56,
     left: 16,
     padding: 8,
     zIndex: 10,
@@ -319,8 +391,8 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 12,
   },
   lockEmoji: { fontSize: 34 },
@@ -328,7 +400,12 @@ const styles = StyleSheet.create({
   headerSub: { fontSize: 13 },
   phoneTxt: { fontSize: 16, marginTop: 4 },
   body: { flex: 1, padding: 28 },
-  boxRow: { flexDirection: 'row', gap: 10, justifyContent: 'center', marginBottom: 12 },
+  boxRow: {
+    flexDirection: "row",
+    gap: 10,
+    justifyContent: "center",
+    marginBottom: 12,
+  },
   otpBox: {
     width: 48,
     height: 58,
@@ -336,34 +413,44 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     fontSize: 26,
   },
-  progressBar: { height: 4, borderRadius: 2, marginBottom: 16, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 2 },
+  progressBar: {
+    height: 4,
+    borderRadius: 2,
+    marginBottom: 16,
+    overflow: "hidden",
+  },
+  progressFill: { height: "100%", borderRadius: 2 },
   errorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
     marginBottom: 12,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   errorText: { fontSize: 13 },
   verifyBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 10,
     height: 56,
     borderRadius: 16,
     marginBottom: 20,
   },
   verifyBtnTxt: { fontSize: 16 },
-  resendRow: { alignItems: 'center', marginBottom: 16 },
+  resendRow: { alignItems: "center", marginBottom: 16 },
   timerTxt: { fontSize: 13 },
   resendLink: { fontSize: 14 },
-  changeRow: { flexDirection: 'row', alignItems: 'center', gap: 4, justifyContent: 'center' },
+  changeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    justifyContent: "center",
+  },
   changeTxt: { fontSize: 13 },
   devBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     marginTop: 24,
     padding: 12,

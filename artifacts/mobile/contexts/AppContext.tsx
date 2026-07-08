@@ -9,12 +9,15 @@ import React, {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import i18n from '@/i18n';
 import type {
+  Budget,
   Crop,
   CropStatus,
   Expense,
   Farm,
   Language,
   Profile,
+  ReceiptScan,
+  Report,
   Sale,
 } from '@/types';
 
@@ -24,6 +27,9 @@ const KEYS = {
   CROPS: '@kisan/crops',
   EXPENSES: '@kisan/expenses',
   SALES: '@kisan/sales',
+  RECEIPTS: '@kisan/receipts',
+  BUDGETS: '@kisan/budgets',
+  REPORTS: '@kisan/reports',
   LANGUAGE: '@kisan/language',
   PHONE: '@kisan/verified_phone',
 };
@@ -38,6 +44,9 @@ interface AppContextType {
   crops: Crop[];
   expenses: Expense[];
   sales: Sale[];
+  receipts: ReceiptScan[];
+  budgets: Budget[];
+  reports: Report[];
   language: Language;
 
   saveProfile: (p: Profile, farmName: string, farmArea: number) => Promise<void>;
@@ -54,6 +63,17 @@ interface AppContextType {
   addSale: (s: Omit<Sale, 'id' | 'createdAt'>) => Promise<Sale>;
   updateSale: (s: Sale) => Promise<void>;
   deleteSale: (id: string) => Promise<void>;
+
+  addReceiptScan: (scan: Omit<ReceiptScan, 'id' | 'createdAt'>) => Promise<ReceiptScan>;
+  updateReceiptScan: (scan: ReceiptScan) => Promise<void>;
+
+  addBudget: (budget: Omit<Budget, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Budget>;
+  updateBudget: (budget: Budget) => Promise<void>;
+  deleteBudget: (id: string) => Promise<void>;
+
+  addReport: (report: Omit<Report, 'id' | 'generatedAt'>) => Promise<Report>;
+  updateReport: (report: Report) => Promise<void>;
+  deleteReport: (id: string) => Promise<void>;
 
   setLanguage: (lang: Language) => Promise<void>;
   verifiedPhone: string | null;
@@ -74,6 +94,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [crops, setCrops] = useState<Crop[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
+  const [receipts, setReceipts] = useState<ReceiptScan[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
   const [language, setLanguageState] = useState<Language>('mr');
   const [verifiedPhone, setVerifiedPhoneState] = useState<string | null>(null);
   const initialized = useRef(false);
@@ -83,10 +106,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     initialized.current = true;
     (async () => {
       try {
-        const [lang, profileStr, farmsStr, cropsStr, expensesStr, salesStr, phoneStr] =
+        const [lang, profileStr, farmsStr, cropsStr, expensesStr, salesStr, receiptsStr, budgetsStr, reportsStr, phoneStr] =
           await AsyncStorage.multiGet([
             KEYS.LANGUAGE, KEYS.PROFILE, KEYS.FARMS,
-            KEYS.CROPS, KEYS.EXPENSES, KEYS.SALES, KEYS.PHONE,
+            KEYS.CROPS, KEYS.EXPENSES, KEYS.SALES, KEYS.RECEIPTS,
+            KEYS.BUDGETS, KEYS.REPORTS, KEYS.PHONE,
           ]);
 
         const savedLang = (lang[1] as Language) || 'mr';
@@ -98,6 +122,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (cropsStr[1]) setCrops(JSON.parse(cropsStr[1]));
         if (expensesStr[1]) setExpenses(JSON.parse(expensesStr[1]));
         if (salesStr[1]) setSales(JSON.parse(salesStr[1]));
+        if (receiptsStr[1]) setReceipts(JSON.parse(receiptsStr[1]));
+        if (budgetsStr[1]) setBudgets(JSON.parse(budgetsStr[1]));
+        if (reportsStr[1]) setReports(JSON.parse(reportsStr[1]));
         if (phoneStr[1]) setVerifiedPhoneState(phoneStr[1]);
       } catch {
         // ignore parse errors
@@ -225,6 +252,78 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, [persist]);
 
+  const addReceiptScan = useCallback(async (scanData: Omit<ReceiptScan, 'id' | 'createdAt'>) => {
+    const now = new Date().toISOString();
+    const newScan: ReceiptScan = { ...scanData, id: generateId(), createdAt: now };
+    setReceipts(prev => {
+      const updated = [newScan, ...prev];
+      persist(KEYS.RECEIPTS, updated);
+      return updated;
+    });
+    return newScan;
+  }, [persist]);
+
+  const updateReceiptScan = useCallback(async (scan: ReceiptScan) => {
+    setReceipts(prev => {
+      const list = prev.map(item => (item.id === scan.id ? scan : item));
+      persist(KEYS.RECEIPTS, list);
+      return list;
+    });
+  }, [persist]);
+
+  const addBudget = useCallback(async (budgetData: Omit<Budget, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const now = new Date().toISOString();
+    const newBudget: Budget = { ...budgetData, id: generateId(), createdAt: now, updatedAt: now };
+    setBudgets(prev => {
+      const updated = [newBudget, ...prev];
+      persist(KEYS.BUDGETS, updated);
+      return updated;
+    });
+    return newBudget;
+  }, [persist]);
+
+  const updateBudget = useCallback(async (budget: Budget) => {
+    setBudgets(prev => {
+      const list = prev.map(item => (item.id === budget.id ? budget : item));
+      persist(KEYS.BUDGETS, list);
+      return list;
+    });
+  }, [persist]);
+
+  const deleteBudget = useCallback(async (id: string) => {
+    setBudgets(prev => {
+      const list = prev.filter(item => item.id !== id);
+      persist(KEYS.BUDGETS, list);
+      return list;
+    });
+  }, [persist]);
+
+  const addReport = useCallback(async (reportData: Omit<Report, 'id' | 'generatedAt'>) => {
+    const newReport: Report = { ...reportData, id: generateId(), generatedAt: new Date().toISOString() };
+    setReports(prev => {
+      const updated = [newReport, ...prev];
+      persist(KEYS.REPORTS, updated);
+      return updated;
+    });
+    return newReport;
+  }, [persist]);
+
+  const updateReport = useCallback(async (report: Report) => {
+    setReports(prev => {
+      const list = prev.map(item => (item.id === report.id ? report : item));
+      persist(KEYS.REPORTS, list);
+      return list;
+    });
+  }, [persist]);
+
+  const deleteReport = useCallback(async (id: string) => {
+    setReports(prev => {
+      const list = prev.filter(item => item.id !== id);
+      persist(KEYS.REPORTS, list);
+      return list;
+    });
+  }, [persist]);
+
   const setLanguage = useCallback(async (lang: Language) => {
     setLanguageState(lang);
     await i18n.changeLanguage(lang);
@@ -264,6 +363,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     crops,
     expenses,
     sales,
+    receipts,
+    budgets,
+    reports,
     language,
     verifiedPhone,
     setVerifiedPhone,
@@ -278,6 +380,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     addSale,
     updateSale,
     deleteSale,
+    addReceiptScan,
+    updateReceiptScan,
+    addBudget,
+    updateBudget,
+    deleteBudget,
+    addReport,
+    updateReport,
+    deleteReport,
     setLanguage,
     getCropExpenses,
     getCropSales,

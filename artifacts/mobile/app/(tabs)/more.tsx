@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '@/contexts/AppContext';
 import { useColors } from '@/hooks/useColors';
 import { formatCurrency } from '@/components/Cards';
+import { useRouter } from 'expo-router';
 import type { Language, ExpenseCategory } from '@/types';
 
 const LANGUAGES: { code: Language; label: string; native: string }[] = [
@@ -28,6 +29,7 @@ export default function MoreScreen() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { profile, farms, crops, expenses, sales, language, setLanguage, getCropTotals } = useApp();
+  const router = useRouter();
   const isWeb = Platform.OS === 'web';
 
   // AI Insights
@@ -127,8 +129,7 @@ export default function MoreScreen() {
               {t('language.change')}
             </Text>
           </View>
-          <View style={styles.langRow}>
-            {LANGUAGES.map(lang => (
+          <View style={styles.langRow}>            {LANGUAGES.map(lang => (
               <TouchableOpacity
                 key={lang.code}
                 onPress={() => handleLanguage(lang.code)}
@@ -149,6 +150,42 @@ export default function MoreScreen() {
                 </Text>
               </TouchableOpacity>
             ))}
+          </View>
+        </View>
+
+        {/* Smart Tools */}
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}> 
+          <View style={styles.cardHeader}>
+            <MaterialIcons name="build-circle" size={20} color={colors.primary} />
+            <Text style={[styles.cardTitle, { color: colors.foreground, fontFamily: 'Inter_600SemiBold' }]}> 
+              {t('tools.title')} 
+            </Text>
+          </View>
+          <View style={styles.toolGrid}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => router.push('/scan')}
+              style={[styles.toolCard, { backgroundColor: colors.secondary, borderColor: colors.border }]}
+            >
+              <MaterialIcons name="camera-alt" size={24} color={colors.success} />
+              <Text style={[styles.toolLabel, { color: colors.foreground, fontFamily: 'Inter_500Medium' }]}> {t('tools.receiptScanner')} </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => router.push('/budget')}
+              style={[styles.toolCard, { backgroundColor: colors.secondary, borderColor: colors.border }]}
+            >
+              <MaterialIcons name="account-balance-wallet" size={24} color={colors.info} />
+              <Text style={[styles.toolLabel, { color: colors.foreground, fontFamily: 'Inter_500Medium' }]}> {t('tools.budgetPlanner')} </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => router.push('/reports/create')}
+              style={[styles.toolCard, { backgroundColor: colors.secondary, borderColor: colors.border }]}
+            >
+              <MaterialIcons name="insert-drive-file" size={24} color={colors.warning} />
+              <Text style={[styles.toolLabel, { color: colors.foreground, fontFamily: 'Inter_500Medium' }]}> {t('tools.reportGenerator')} </Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -236,6 +273,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   langNative: { fontSize: 14 },
+  toolGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 10 },
+  toolCard: { flex: 1, minWidth: 100, borderRadius: 14, borderWidth: 1, padding: 16, alignItems: 'center', gap: 10 },
+  toolLabel: { fontSize: 13, textAlign: 'center' },
   noInsights: { alignItems: 'center', paddingVertical: 20, gap: 10 },
   noInsightsText: { fontSize: 13, textAlign: 'center' },
   insightRow: { flexDirection: 'row', gap: 12, paddingVertical: 12, alignItems: 'flex-start' },

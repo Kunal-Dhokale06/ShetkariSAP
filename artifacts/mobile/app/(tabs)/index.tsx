@@ -17,6 +17,7 @@ import { useApp } from '@/contexts/AppContext';
 import { useColors } from '@/hooks/useColors';
 import { CropCard, formatCurrency, SectionHeader, StatCard } from '@/components/Cards';
 import { EmptyState } from '@/components/Cards';
+import { WeatherWidget } from '@/components/WeatherWidget';
 
 export default function DashboardScreen() {
   const colors = useColors();
@@ -34,7 +35,7 @@ export default function DashboardScreen() {
   const dateStr = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' }).format(now);
   const weekday = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(now);
 
-  const handleNav = (path: '/crops/add' | '/expenses/add' | '/sales/add') => {
+  const handleNav = (path: '/crops/add' | '/expenses/add' | '/sales/add' | '/scan' | '/budget' | '/reports/create') => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push(path);
   };
@@ -111,6 +112,12 @@ export default function DashboardScreen() {
           </View>
         </View>
 
+        {/* Weather Widget */}
+        <View style={{ marginTop: 20 }}>
+          <SectionHeader title={t('weather.title')} style={{ paddingHorizontal: 16 }} />
+          <WeatherWidget />
+        </View>
+
         {/* Quick Actions */}
         <View style={styles.section}>
           <SectionHeader title={t('dashboard.quickActions')} />
@@ -135,6 +142,29 @@ export default function DashboardScreen() {
               bg="#E3F2FD"
               iconColor={colors.info}
               onPress={() => handleNav('/sales/add')}
+            />
+          </View>
+          <View style={[styles.actionsRow, { marginTop: 12 }]}> 
+            <QuickAction
+              icon="camera-alt"
+              label={t('tools.receiptScanner')}
+              bg="#E8F5E9"
+              iconColor={colors.success}
+              onPress={() => handleNav('/scan')}
+            />
+            <QuickAction
+              icon="account-balance-wallet"
+              label={t('tools.budgetPlanner')}
+              bg="#E3F2FD"
+              iconColor={colors.info}
+              onPress={() => handleNav('/budget')}
+            />
+            <QuickAction
+              icon="insert-drive-file"
+              label={t('tools.reportGenerator')}
+              bg="#FFF3E0"
+              iconColor={colors.warning}
+              onPress={() => handleNav('/reports/create')}
             />
           </View>
         </View>
