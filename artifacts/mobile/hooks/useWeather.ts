@@ -1,11 +1,56 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import * as Location from 'expo-location';
+import Constants from 'expo-constants';
 import { useApp } from '@/contexts/AppContext';
 import { DISTRICT_COORDS } from '@/constants/district-coordinates';
 
-// Default to the host advertising the Expo packager on the LAN (adjust if yours differs)
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://192.168.1.2:3000';
+function getApiBaseUrl(): string {
+  return (
+    process.env.EXPO_PUBLIC_API_URL ||
+    (Constants.expoConfig?.extra as { EXPO_PUBLIC_API_URL?: string })?.EXPO_PUBLIC_API_URL ||
+    (Constants.manifest?.extra as { EXPO_PUBLIC_API_URL?: string })?.EXPO_PUBLIC_API_URL ||
+    (Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000')
+  );
+}
+
+function normalizeBackendHost(rawHost: string | undefined): string | null {
+  if (!rawHost) return null;
+  if (rawHost.startsWith('http://') || rawHost.startsWith('https://')) {
+    return rawHost;
+  }
+
+  const host = rawHost.split(',')[0].split(':')[0].trim();
+  if (!host) return null;
+  return `http://${host}:3000`;
+}
+
+function getApiBaseUrl(): string {
+  const extra = Constants.expoConfig?.extra as { EXPO_PUBLIC_API_URL?: string } | undefined;
+  const manifestExtra = (Constants.manifest?.extra as { EXPO_PUBLIC_API_URL?: string } | undefined);
+  const explicitUrl =
+    process.env.EXPO_PUBLIC_API_URL ||
+    extra?.EXPO_PUBLIC_API_URL ||
+    manifestExtra?.EXPO_PUBLIC_API_URL;
+
+  if (explicitUrl) {
+    return explicitUrl;
+  }
+
+  const debuggerHost =
+    (Constants.manifest as { debuggerHost?: string } | undefined)?.debuggerHost ||
+    (Constants.manifest2 as { debuggerHost?: string } | undefined)?.debuggerHost ||
+    (Constants.expoConfig as { hostUri?: string } | undefined)?.hostUri;
+
+  const parsed = normalizeBackendHost(debuggerHost);
+  if (parsed) {
+    return parsed;
+  }
+
+  return Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
+}
+
+const API_BASE_URL = getApiBaseUrl();
 
 export interface WeatherData {
   temperature: number;           // °C
